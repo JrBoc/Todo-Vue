@@ -16,7 +16,7 @@
                 :key="todo.id"
                 :todo="todo"
                 :index="index"
-                :checkAll="anyRemaining"
+                :checkAll="!anyRemaining"
                 @removedTodo="removeTodo"
                 @finishedEdit="finishedEdit"
             >

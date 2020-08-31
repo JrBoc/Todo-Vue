@@ -55,7 +55,7 @@ export default {
     },
     watch: {
         checkAll() {
-            if (!this.checkAll) {
+            if (this.checkAll) {
                 this.completed = true;
             } else {
                 this.completed = this.todo.completed;
