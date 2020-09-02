@@ -1,23 +1,26 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import axios from 'axios';
 
 Vue.use(Vuex);
 
+axios.defaults.baseURL = 'http://todo-laravel.test/api'
 // Defining states / data
 export const store = new Vuex.Store({
     state: {
-        todos: [{
-                id: 1,
-                title: "Finish Vue Meme",
-                completed: false,
-                editing: false
-            },
-            {
-                id: 2,
-                title: "Take over the world",
-                completed: false,
-                editing: false
-            }
+        todos: [
+            // {
+            //     id: 1,
+            //     title: "Finish Vue Meme",
+            //     completed: false,
+            //     editing: false
+            // },
+            // {
+            //     id: 2,
+            //     title: "Take over the world",
+            //     completed: false,
+            //     editing: false
+            // }
         ],
         filter: 'all',
     },
@@ -73,38 +76,82 @@ export const store = new Vuex.Store({
                 completed: todo.completed,
                 editing: todo.editing,
             });
+        },
+        retrieveTodos(state, todos) {
+            state.todos = todos;
         }
     },
     actions: {
+        retrieveTodos(context) {
+            axios.get('/todos')
+                .then(response => {
+                    context.commit('retrieveTodos', response.data)
+                })
+                .catch(error => {
+                    console.error(error)
+                });
+        },
         clearCompleted(context) {
-            setTimeout(() => {
+            const completed = store.state.todos
+                .filter(todo => todo.completed)
+                .map(todo => todo.id);
+
+            axios.delete('/todos-delete-completed', {
+                params: {
+                    todos: completed,
+                }
+            }).then(response => {
                 context.commit('clearCompleted');
-            }, 1000);
+            })
+            .catch(error => {
+                console.error(error)
+            });
         },
         updateFilter(context, filter) {
-            setTimeout(() => {
-                context.commit('updateFilter', filter)
-            }, 1000);
+            context.commit('updateFilter', filter)
         },
         checkAll(context, checked) {
-            setTimeout(() => {
+            axios.put('/todos-check-all', {
+                completed: checked,
+            }).then(response => {
                 context.commit('checkAll', checked)
-            }, 1000);
+            })
+            .catch(error => {
+                console.error(error)
+            });
         },
         addTodo(context, todo) {
-            setTimeout(() => {
-                context.commit('addTodo', todo)
-            }, 1000);
+            axios.post('/todos', {
+                title: todo.title,
+                completed: false,
+            })
+            .then(response => {
+                context.commit('addTodo', response.data)
+            })
+            .catch(error => {
+                console.error(error)
+            });
         },
         deleteTodo(context, id) {
-            setTimeout(() => {
-                context.commit('deleteTodo', id)
-            }, 1000);
+            axios.delete('/todos/' + id)
+                .then(response => {
+                    context.commit('deleteTodo', id)
+                })
+                .catch(error => {
+                    console.error(error)
+                });
         },
         updateTodo(context, todo) {
-            setTimeout(() => {
-                context.commit('updateTodo', todo)
-            }, 1000);
+            axios.put('/todos/' + todo.id, {
+                title: todo.title,
+                completed: todo.completed,
+            })
+            .then(response => {
+                context.commit('updateTodo', response.data)
+            })
+            .catch(error => {
+                console.error(error)
+            });
         }
     }
 });

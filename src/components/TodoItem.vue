@@ -113,7 +113,7 @@ export default {
                 item => item.id == this.id
             );
 
-            this.$store.state.todos.splice(index, 1, {
+             this.$store.dispatch("updateTodo", {
                 id: this.id,
                 title: this.title,
                 completed: this.completed,
