@@ -8,19 +8,8 @@ axios.defaults.baseURL = 'http://todo-laravel.test/api'
 // Defining states / data
 export const store = new Vuex.Store({
     state: {
+        token: localStorage.getItem('access_token'),
         todos: [
-            // {
-            //     id: 1,
-            //     title: "Finish Vue Meme",
-            //     completed: false,
-            //     editing: false
-            // },
-            // {
-            //     id: 2,
-            //     title: "Take over the world",
-            //     completed: false,
-            //     editing: false
-            // }
         ],
         filter: 'all',
     },
@@ -42,6 +31,9 @@ export const store = new Vuex.Store({
         },
         showClearCompletedButton(state) {
             return state.todos.filter(todo => todo.completed).length > 0;
+        },
+        loggedIn(state) {
+            return state.token !== null;
         }
     },
     mutations: {
@@ -79,7 +71,13 @@ export const store = new Vuex.Store({
         },
         retrieveTodos(state, todos) {
             state.todos = todos;
-        }
+        },
+        retrieveToken(state, token) {
+            state.token = token;
+        } ,
+        destroyToken(state) {
+            state.token = null;
+        } 
     },
     actions: {
         retrieveTodos(context) {
@@ -134,12 +132,12 @@ export const store = new Vuex.Store({
         },
         deleteTodo(context, id) {
             axios.delete('/todos/' + id)
-                .then(response => {
-                    context.commit('deleteTodo', id)
-                })
-                .catch(error => {
-                    console.error(error)
-                });
+            .then(response => {
+                context.commit('deleteTodo', id)
+            })
+            .catch(error => {
+                console.error(error)
+            });
         },
         updateTodo(context, todo) {
             axios.put('/todos/' + todo.id, {
@@ -151,6 +149,62 @@ export const store = new Vuex.Store({
             })
             .catch(error => {
                 console.error(error)
+            });
+        },
+        retrieveToken(context, credentials) {
+            return new Promise((resolve, reject) => {
+                axios.post('/login', {
+                    username: credentials.username,
+                    password: credentials.password,
+                })
+                .then(response => {
+                    const token = response.data.access_token;
+    
+                    context.commit('retrieveToken', token);
+                    localStorage.setItem('access_token', token);
+
+                    resolve(response);
+                })
+                .catch(error => {
+                    console.error(error)
+                    reject(response);
+                });
+            });
+        },
+        destroyToken(context) {
+            axios.defaults.headers.common['Authorization'] = 'Bearer ' + context.state.token
+
+            return new Promise((resolve, reject) => {
+                if(context.getters.loggedIn) {
+                    axios.post('/logout')
+                    .then(response => {
+                        localStorage.removeItem('access_token');
+                        context.commit('destroyToken');
+                        resolve(response);
+                    })
+                    .catch(error => {
+                        localStorage.removeItem('access_token');
+                        context.commit('destroyToken');
+                        console.error(error)
+                        reject(response);
+                    });
+                }
+            });
+        },
+        register(context, credentials) {
+            return new Promise((resolve, reject) => {
+                axios.post('/register', {
+                    name: credentials.name,
+                    username: credentials.username,
+                    password: credentials.password,
+                })
+                .then(response => {
+                    resolve(response);
+                })
+                .catch(error => {
+                    console.error(error)
+                    reject(response);
+                });
             });
         }
     }

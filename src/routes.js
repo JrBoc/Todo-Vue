@@ -1,30 +1,24 @@
 import App from "./App";
 import Landing from "./components/marketing/Landing";
 import About from "./components/marketing/About";
-import TestTodosVariable from "./components/marketing/TestTodosVariable";
+// import TestTodosVariable from "./components/marketing/TestTodosVariable";
 import Login from "./components/auth/Login";
+import Logout from "./components/auth/Logout";
 import Register from "./components/auth/Register";
 
 const routes = [
     {
         path: "/",
-        component: Landing,
-        name: "home"
+        name: "home",
+        component: Landing
     },
     {
         path: "/todo",
         name: "todo",
-        component: App
-    },
-    {
-        path: "/login",
-        name: "login",
-        component: Login
-    },
-    {
-        path: "/register",
-        name: "register",
-        component: Register
+        component: App,
+        meta: {
+            requiresAuth: true
+        }
     },
     {
         path: "/about",
@@ -32,9 +26,25 @@ const routes = [
         component: About
     },
     {
-        path: '/todos/:id',
-        name: 'todos',
-        component: TestTodosVariable,
+        path: "/login",
+        name: "login",
+        component: Login,
+        meta: {
+            requiresVisitor: true
+        }
+    },
+    {
+        path: "/register",
+        name: "register",
+        component: Register,
+        meta: {
+            requiresVisitor: true
+        }
+    },
+    {
+        path: "/logout",
+        name: "logout",
+        component: Logout
     }
 ];
 
